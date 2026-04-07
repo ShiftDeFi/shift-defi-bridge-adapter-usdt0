@@ -7,3 +7,6 @@
 [submodule "lib/openzeppelin-contracts-upgradeable"]
 	path = lib/openzeppelin-contracts-upgradeable
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable
+[submodule "lib/shift-defi-platform"]
+	path = lib/shift-defi-platform
+	url = https://github.com/ShiftDeFi/shift-defi-platform
