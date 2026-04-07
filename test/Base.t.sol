@@ -2,7 +2,6 @@
 pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {Vm} from "forge-std/Vm.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {IContainer} from "@shift-defi/core/interfaces/IContainer.sol";
 import {ContainerPrincipal} from "@shift-defi/core/ContainerPrincipal.sol";
