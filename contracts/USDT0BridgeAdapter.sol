@@ -22,7 +22,15 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter {
         _disableInitializers();
     }
 
-    function initialize(address _defaultAdmin, address _bridgeAdapterManager, address _cacheManager, uint256 _slippageCapPct, uint256 _maxCacheSize, address _usdt0, address _oft) external initializer {
+    function initialize(
+        address _defaultAdmin,
+        address _bridgeAdapterManager,
+        address _cacheManager,
+        uint256 _slippageCapPct,
+        uint256 _maxCacheSize,
+        address _usdt0,
+        address _oft
+    ) external initializer {
         require(_usdt0 != address(0), Errors.ZeroAddress());
         require(_oft != address(0), Errors.ZeroAddress());
         usdt0 = _usdt0;
@@ -38,7 +46,11 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter {
         return abi.decode(payload, (Payload));
     }
 
-    function _bridge(BridgeInstruction calldata instruction, address receiver, address) internal override returns (uint256) {
+    function _bridge(BridgeInstruction calldata instruction, address receiver, address)
+        internal
+        override
+        returns (uint256)
+    {
         Payload memory payload = decodeUsdt0Payload(instruction.payload);
 
         if (block.chainid == ETH_CHAIN_ID) {

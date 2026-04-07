@@ -24,19 +24,14 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
         string memory ETHEREUM_RPC = vm.envString("ETH_RPC_URL");
         string memory ARBITRUM_RPC = vm.envString("ARB_RPC_URL");
 
-        _setUp(Fork({
-            rpc: ETHEREUM_RPC,
-            usdt: ETHEREUM_USDT,
-            oft: ETHEREUM_OFT,
-            chainId: ETHEREUM_CHAIN_ID,
-            eid: ETHEREUM_EID
-        }), Fork({
-            rpc: ARBITRUM_RPC,
-            usdt: ARBITRUM_USDT,
-            oft: ARBITRUM_OFT,
-            chainId: ARBITRUM_CHAIN_ID,
-            eid: ARBITRUM_EID
-        }));
+        _setUp(
+            Fork({
+                rpc: ETHEREUM_RPC, usdt: ETHEREUM_USDT, oft: ETHEREUM_OFT, chainId: ETHEREUM_CHAIN_ID, eid: ETHEREUM_EID
+            }),
+            Fork({
+                rpc: ARBITRUM_RPC, usdt: ARBITRUM_USDT, oft: ARBITRUM_OFT, chainId: ARBITRUM_CHAIN_ID, eid: ARBITRUM_EID
+            })
+        );
     }
 
     function test_BridgeFromContainer() public {
@@ -69,9 +64,7 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
         vm.startPrank(roles.operator);
         containerPrincipal.sendDepositRequest{value: nativeFee}(
             ICrossChainContainer.MessageInstruction({
-                value: 0,
-                adapter: makeAddr("messageAdapter"),
-                parameters: new bytes(0)
+                value: 0, adapter: makeAddr("messageAdapter"), parameters: new bytes(0)
             }),
             bridgeAdapters,
             bridgeIxs

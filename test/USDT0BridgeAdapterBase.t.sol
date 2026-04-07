@@ -6,7 +6,6 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {IBridgeAdapter} from "@shift-defi/core/interfaces/IBridgeAdapter.sol";
 import {Base} from "./Base.t.sol";
 
-
 contract USDT0BridgeAdapterBase is Base {
     using SafeERC20 for IERC20;
 

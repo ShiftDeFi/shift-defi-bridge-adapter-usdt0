@@ -10,7 +10,6 @@ import {ICrossChainContainer} from "@shift-defi/core/interfaces/ICrossChainConta
 import {IMessageRouter} from "@shift-defi/core/interfaces/IMessageRouter.sol";
 import {USDT0BridgeAdapter} from "../contracts/USDT0BridgeAdapter.sol";
 
-
 abstract contract Base is Test {
     USDT0BridgeAdapter public l1Peer;
     USDT0BridgeAdapter public l2Peer;
@@ -28,16 +27,15 @@ abstract contract Base is Test {
         address messageRouter;
     }
 
-    Roles public roles =
-        Roles({
-            defaultAdmin: makeAddr("defaultAdmin"),
-            bridgeAdapterManager: makeAddr("bridgeAdapterManager"),
-            cacheManager: makeAddr("cacheManager"),
-            bridger: makeAddr("bridger"),
-            operator: makeAddr("operator"),
-            messengerManager: makeAddr("messengerManager"),
-            messageRouter: makeAddr("messageRouter")
-        });
+    Roles public roles = Roles({
+        defaultAdmin: makeAddr("defaultAdmin"),
+        bridgeAdapterManager: makeAddr("bridgeAdapterManager"),
+        cacheManager: makeAddr("cacheManager"),
+        bridger: makeAddr("bridger"),
+        operator: makeAddr("operator"),
+        messengerManager: makeAddr("messengerManager"),
+        messageRouter: makeAddr("messageRouter")
+    });
 
     address receiver = makeAddr("receiver");
 
@@ -135,9 +133,12 @@ abstract contract Base is Test {
         return adapter;
     }
 
-    function _proxifyContainerPrincipal(uint256 forkId, Roles memory _roles, Fork memory _fork) internal returns (ContainerPrincipal) {
+    function _proxifyContainerPrincipal(uint256 forkId, Roles memory _roles, Fork memory _fork)
+        internal
+        returns (ContainerPrincipal)
+    {
         uint256 remoteChainId = _fork.chainId == l1Fork.chainId ? l2Fork.chainId : l1Fork.chainId;
-        
+
         vm.selectFork(forkId);
         TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
             address(new ContainerPrincipal()),
