@@ -3,10 +3,12 @@ pragma solidity ^0.8.28;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {OptionsBuilder} from "@layer-zero/devtools/packages/oapp-evm/oapp/libs/OptionsBuilder.sol";
+import {IOFT, SendParam, OFTReceipt} from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
+
+import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 import {BridgeAdapter} from "@shift-defi/core/BridgeAdapter.sol";
 import {Errors} from "@shift-defi/core/libraries/Errors.sol";
 
-import {ILayzerZeroEndpointV2} from "./dependencies/interfaces/layerzero/ILayzerZeroEndpointV2.sol";
 import {IUSDT0BridgeAdapter} from "./dependencies/interfaces/IUSDT0BridgeAdapter.sol";
 import {IOAppComposer} from "@layer-zero/devtools/packages/oapp-evm/oapp/interfaces/IOAppComposer.sol";
 
@@ -19,7 +21,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     uint64 private constant ETH_CHAIN_ID = 1;
 
     address public usdt0;
-    address public endpoint;
+    address public oft;
 
     mapping(address => bool) public approvedOApps;
 
@@ -34,12 +36,12 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         uint256 _slippageCapPct,
         uint256 _maxCacheSize,
         address _usdt0,
-        address _endpoint
+        address _oft
     ) external initializer {
         require(_usdt0 != address(0), Errors.ZeroAddress());
-        require(_endpoint != address(0), Errors.ZeroAddress());
+        require(_oft != address(0), Errors.ZeroAddress());
         usdt0 = _usdt0;
-        endpoint = _endpoint;
+        oft = _oft;
         __BridgeAdapter_init(_defaultAdmin, _bridgeAdapterManager, _cacheManager, _slippageCapPct, _maxCacheSize);
     }
 
@@ -62,13 +64,13 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     function quoteBridgeNativeFee(BridgeInstruction calldata instruction, address receiver)
         public
         view
-        returns (ILayzerZeroEndpointV2.MessagingFee memory, ILayzerZeroEndpointV2.SendParam memory)
+        returns (MessagingFee memory, SendParam memory)
     {
         Payload memory payload = decodeUsdt0Payload(instruction.payload);
         bytes memory composeMsg = encodeLzComposeMessage(payload.claimer, instruction.amount);
         bytes memory extraOptions = OptionsBuilder.newOptions().addExecutorLzComposeOption(0, payload.gasLimit, 0);
 
-        ILayzerZeroEndpointV2.SendParam memory sendParam = ILayzerZeroEndpointV2.SendParam({
+        SendParam memory sendParam = SendParam({
             dstEid: payload.dstEid,
             to: bytes32(uint256(uint160(receiver))),
             amountLD: instruction.amount,
@@ -77,9 +79,9 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
             composeMsg: composeMsg,
             oftCmd: new bytes(0)
         });
-        (,, ILayzerZeroEndpointV2.OFTReceipt memory oftReceipt) = ILayzerZeroEndpointV2(endpoint).quoteOFT(sendParam);
+        (,, OFTReceipt memory oftReceipt) = IOFT(oft).quoteOFT(sendParam);
         sendParam.minAmountLD = oftReceipt.amountReceivedLD;
-        ILayzerZeroEndpointV2.MessagingFee memory msgFee = ILayzerZeroEndpointV2(endpoint).quoteSend(sendParam, false);
+        MessagingFee memory msgFee = IOFT(oft).quoteSend(sendParam, false);
         return (msgFee, sendParam);
     }
 
@@ -90,7 +92,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         address _executor,
         bytes calldata _extraData
     ) external payable override {
-        require(msg.sender == endpoint, NotLzEndpoint());
+        require(msg.sender == oft, NotOFT());
         require(approvedOApps[_fromOApp], NotApprovedOApp());
         (address claimer, uint256 amount) = decodeLzComposeMessage(_message);
         _finalizeBridge(claimer, usdt0, amount);
@@ -107,19 +109,18 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         override
         returns (uint256)
     {
-        address endpointCached = endpoint;
+        address oftCached = oft;
         if (block.chainid == ETH_CHAIN_ID) {
-            IERC20(usdt0).safeIncreaseAllowance(endpointCached, instruction.amount);
+            IERC20(usdt0).safeIncreaseAllowance(oftCached, instruction.amount);
         }
 
-        (ILayzerZeroEndpointV2.MessagingFee memory msgFee, ILayzerZeroEndpointV2.SendParam memory sendParam) =
-            quoteBridgeNativeFee(instruction, receiver);
+        (MessagingFee memory msgFee, SendParam memory sendParam) = quoteBridgeNativeFee(instruction, receiver);
         uint256 ethSelfBalance = address(this).balance;
         if (ethSelfBalance < msgFee.nativeFee) {
             revert NotEnougthNativeBalance(ethSelfBalance, msgFee.nativeFee);
         }
 
-        ILayzerZeroEndpointV2(endpointCached).send{value: msgFee.nativeFee}(sendParam, msgFee, tx.origin);
+        IOFT(oftCached).send{value: msgFee.nativeFee}(sendParam, msgFee, tx.origin);
         return instruction.amount;
     }
 }

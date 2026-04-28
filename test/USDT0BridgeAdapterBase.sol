@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IBridgeAdapter} from "@shift-defi/core/interfaces/IBridgeAdapter.sol";
 import {Base} from "./Base.sol";
-import {ILayzerZeroEndpointV2} from "../contracts/dependencies/interfaces/layerzero/ILayzerZeroEndpointV2.sol";
+import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 
 abstract contract USDT0BridgeAdapterBase is Base {
     using SafeERC20 for IERC20;
@@ -28,7 +28,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
 
         vm.startPrank(roles.bridger);
         IERC20(l1Fork.usdt).safeIncreaseAllowance(address(l1Peer), amount);
-        (ILayzerZeroEndpointV2.MessagingFee memory msgFee,) = l1Peer.quoteBridgeNativeFee(ix, receiver);
+        (MessagingFee memory msgFee,) = l1Peer.quoteBridgeNativeFee(ix, receiver);
         uint256 nativeFee = msgFee.nativeFee;
         ix.value = nativeFee;
         deal(roles.bridger, nativeFee);
@@ -56,7 +56,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
 
         vm.startPrank(roles.bridger);
         IERC20(l2Fork.usdt).safeIncreaseAllowance(address(l2Peer), amount);
-        (ILayzerZeroEndpointV2.MessagingFee memory msgFee,) = l2Peer.quoteBridgeNativeFee(ix, receiver);
+        (MessagingFee memory msgFee,) = l2Peer.quoteBridgeNativeFee(ix, receiver);
         uint256 nativeFee = msgFee.nativeFee;
         ix.value = nativeFee;
         deal(roles.bridger, nativeFee);
