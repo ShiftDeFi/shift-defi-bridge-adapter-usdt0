@@ -9,7 +9,7 @@ import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfac
 import {BridgeAdapter} from "@shift-defi/core/BridgeAdapter.sol";
 import {Errors} from "@shift-defi/core/libraries/Errors.sol";
 
-import {IUSDT0BridgeAdapter} from "./dependencies/interfaces/IUSDT0BridgeAdapter.sol";
+import {IUSDT0BridgeAdapter} from "./interfaces/IUSDT0BridgeAdapter.sol";
 import {IOAppComposer} from "@layer-zero/devtools/packages/oapp-evm/oapp/interfaces/IOAppComposer.sol";
 
 /// @title USDT0BridgeAdapter
