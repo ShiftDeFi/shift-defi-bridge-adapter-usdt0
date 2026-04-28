@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-interface IOFT {
+interface ILayzerZeroEndpointV2 {
     /**
      * @dev Struct representing token parameters for the OFT send() operation.
      */

@@ -85,8 +85,8 @@ abstract contract Base is Test {
         vm.stopPrank();
 
         vm.selectFork(l1ForkId);
-        deal(l1Fork.usdt, roles.bridger, 10 ether);
-        deal(roles.bridger, 50 ether);
+        deal(l1Fork.usdt, roles.bridger, 100 ether);
+        deal(roles.bridger, 500 ether);
 
         containerPrincipal = _proxifyContainerPrincipal(l1ForkId, roles, l1Fork);
         deal(roles.operator, 100 ether);
@@ -103,8 +103,8 @@ abstract contract Base is Test {
         vm.mockCall(roles.messageRouter, IMessageRouter.send.selector, "");
 
         vm.selectFork(l2ForkId);
-        deal(l2Fork.usdt, roles.bridger, 10 ether);
-        deal(roles.bridger, 50 ether);
+        deal(l2Fork.usdt, roles.bridger, 100 ether);
+        deal(roles.bridger, 500 ether);
     }
 
     function _randomBridgeAmount() internal view returns (uint256) {
