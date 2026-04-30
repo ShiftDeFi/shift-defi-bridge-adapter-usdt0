@@ -113,7 +113,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     }
 
     /// @inheritdoc IUSDT0BridgeAdapter
-    function setOAppAllowance(address oapp, bool allowance) external override {
+    function setOAppAllowance(address oapp, bool allowance) external onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE) override {
         bool oldAllowance = approvedOApps[oapp];
         require(oldAllowance != allowance, AlreadySet());
         approvedOApps[oapp] = allowance;
