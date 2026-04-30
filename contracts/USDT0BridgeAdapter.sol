@@ -11,6 +11,7 @@ import {Errors} from "@shift-defi/core/libraries/Errors.sol";
 
 import {IUSDT0BridgeAdapter} from "./interfaces/IUSDT0BridgeAdapter.sol";
 import {IOAppComposer} from "@layer-zero/devtools/packages/oapp-evm/oapp/interfaces/IOAppComposer.sol";
+import {ILayerZeroComposer} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroComposer.sol";
 
 /// @title USDT0BridgeAdapter
 /// @notice Bridge adapter for USDT0 Network
@@ -29,6 +30,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         _disableInitializers();
     }
 
+    /// @inheritdoc IUSDT0BridgeAdapter
     function initialize(
         address _defaultAdmin,
         address _bridgeAdapterManager,
@@ -37,7 +39,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         uint256 _maxCacheSize,
         address _usdt0,
         address _oft
-    ) external initializer {
+    ) external override initializer {
         require(_usdt0 != address(0), Errors.ZeroAddress());
         require(_oft != address(0), Errors.ZeroAddress());
         usdt0 = _usdt0;
@@ -45,25 +47,36 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         __BridgeAdapter_init(_defaultAdmin, _bridgeAdapterManager, _cacheManager, _slippageCapPct, _maxCacheSize);
     }
 
-    function encodeUsdt0Payload(uint32 dstEid, address claimer, uint128 gasLimit) external pure returns (bytes memory) {
+    /// @inheritdoc IUSDT0BridgeAdapter
+    function encodeUsdt0Payload(uint32 dstEid, address claimer, uint128 gasLimit)
+        external
+        pure
+        override
+        returns (bytes memory)
+    {
         return abi.encode(Payload({dstEid: dstEid, claimer: claimer, gasLimit: gasLimit}));
     }
 
-    function decodeUsdt0Payload(bytes memory payload) public pure returns (Payload memory) {
+    /// @inheritdoc IUSDT0BridgeAdapter
+    function decodeUsdt0Payload(bytes memory payload) public pure override returns (Payload memory) {
         return abi.decode(payload, (Payload));
     }
 
-    function encodeLzComposeMessage(address claimer, uint256 amount) public pure returns (bytes memory) {
+    /// @inheritdoc IUSDT0BridgeAdapter
+    function encodeLzComposeMessage(address claimer, uint256 amount) public pure override returns (bytes memory) {
         return abi.encode(claimer, amount);
     }
 
-    function decodeLzComposeMessage(bytes memory data) public pure returns (address, uint256) {
+    /// @inheritdoc IUSDT0BridgeAdapter
+    function decodeLzComposeMessage(bytes memory data) public pure override returns (address, uint256) {
         return abi.decode(data, (address, uint256));
     }
 
+    /// @inheritdoc IUSDT0BridgeAdapter
     function quoteBridgeNativeFee(BridgeInstruction calldata instruction, address receiver)
         public
         view
+        override
         returns (MessagingFee memory, SendParam memory)
     {
         Payload memory payload = decodeUsdt0Payload(instruction.payload);
@@ -85,20 +98,22 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         return (msgFee, sendParam);
     }
 
+    /// @inheritdoc IUSDT0BridgeAdapter
     function lzCompose(
         address _fromOApp,
         bytes32 _guid,
         bytes calldata _message,
         address _executor,
         bytes calldata _extraData
-    ) external payable override {
+    ) external payable override(IUSDT0BridgeAdapter, ILayerZeroComposer) {
         require(msg.sender == oft, NotOFT());
         require(approvedOApps[_fromOApp], NotApprovedOApp());
         (address claimer, uint256 amount) = decodeLzComposeMessage(_message);
         _finalizeBridge(claimer, usdt0, amount);
     }
 
-    function setOAppAllowance(address oapp, bool allowance) external {
+    /// @inheritdoc IUSDT0BridgeAdapter
+    function setOAppAllowance(address oapp, bool allowance) external override {
         bool oldAllowance = approvedOApps[oapp];
         require(oldAllowance != allowance, AlreadySet());
         approvedOApps[oapp] = allowance;
