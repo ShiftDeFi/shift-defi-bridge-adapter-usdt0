@@ -6,6 +6,8 @@ import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfac
 import {IBridgeAdapter} from "@shift-defi/core/interfaces/IBridgeAdapter.sol";
 
 interface IUSDT0BridgeAdapter {
+    event OAppAllowanceSet(address indexed oapp, bool oldAllowance, bool newAllowance);
+
     error NotEnougthNativeBalance(uint256 balance, uint256 needed);
     error NotOFT();
     error NotApprovedOApp();

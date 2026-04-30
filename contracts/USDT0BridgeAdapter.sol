@@ -117,6 +117,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         bool oldAllowance = approvedOApps[oapp];
         require(oldAllowance != allowance, AlreadySet());
         approvedOApps[oapp] = allowance;
+        emit OAppAllowanceSet(oapp, oldAllowance, allowance);
     }
 
     function _bridge(BridgeInstruction calldata instruction, address receiver, address)
