@@ -124,17 +124,16 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         override
         returns (uint256)
     {
-        address oftCached = oft;
-        if (block.chainid == ETH_CHAIN_ID) {
-            IERC20(usdt0).safeIncreaseAllowance(oftCached, instruction.amount);
-        }
-
         (MessagingFee memory msgFee, SendParam memory sendParam) = quoteBridgeNativeFee(instruction, receiver);
         uint256 ethSelfBalance = address(this).balance;
         if (ethSelfBalance < msgFee.nativeFee) {
             revert NotEnougthNativeBalance(ethSelfBalance, msgFee.nativeFee);
         }
 
+        address oftCached = oft;
+        if (block.chainid == ETH_CHAIN_ID) {
+            IERC20(usdt0).safeIncreaseAllowance(oftCached, instruction.amount);
+        }
         IOFT(oftCached).send{value: msgFee.nativeFee}(sendParam, msgFee, tx.origin);
         return instruction.amount;
     }
