@@ -93,7 +93,9 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
             oftCmd: new bytes(0)
         });
         (,, OFTReceipt memory oftReceipt) = IOFT(oft).quoteOFT(sendParam);
-        sendParam.minAmountLD = oftReceipt.amountReceivedLD;
+        uint256 minAmountReceived = oftReceipt.amountReceivedLD;
+        require(minAmountReceived >= instruction.minTokenAmount, InsufficientAmount(minAmountReceived, instruction.minTokenAmount));
+        sendParam.minAmountLD = minAmountReceived;
         MessagingFee memory msgFee = IOFT(oft).quoteSend(sendParam, false);
         return (msgFee, sendParam);
     }

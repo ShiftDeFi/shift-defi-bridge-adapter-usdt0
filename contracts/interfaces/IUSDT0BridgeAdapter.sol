@@ -9,6 +9,7 @@ interface IUSDT0BridgeAdapter {
     event OAppAllowanceSet(address indexed oapp, bool oldAllowance, bool newAllowance);
 
     error NotEnougthNativeBalance(uint256 balance, uint256 needed);
+    error InsufficientAmount(uint256 received, uint256 required);
     error NotOFT();
     error NotApprovedOApp();
     error AlreadySet();
