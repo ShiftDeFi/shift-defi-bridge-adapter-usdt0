@@ -19,7 +19,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     using SafeERC20 for IERC20;
     using OptionsBuilder for bytes;
 
-    uint64 private constant ETH_CHAIN_ID = 1;
+    uint256 private constant ETH_CHAIN_ID = 1;
 
     address public usdt0;
     address public oft;
