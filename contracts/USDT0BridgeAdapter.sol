@@ -48,13 +48,15 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     }
 
     /// @inheritdoc IUSDT0BridgeAdapter
-    function encodeUsdt0Payload(uint32 dstEid, address claimer, uint128 gasLimit)
+    function encodeUsdt0Payload(uint32 dstEid, address claimer, address refundRecipient, uint128 gasLimit)
         external
         pure
         override
         returns (bytes memory)
     {
-        return abi.encode(Payload({dstEid: dstEid, claimer: claimer, gasLimit: gasLimit}));
+        return abi.encode(
+            Payload({dstEid: dstEid, claimer: claimer, refundRecipient: refundRecipient, gasLimit: gasLimit})
+        );
     }
 
     /// @inheritdoc IUSDT0BridgeAdapter
@@ -94,7 +96,10 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         });
         (,, OFTReceipt memory oftReceipt) = IOFT(oft).quoteOFT(sendParam);
         uint256 minAmountReceived = oftReceipt.amountReceivedLD;
-        require(minAmountReceived >= instruction.minTokenAmount, InsufficientAmount(minAmountReceived, instruction.minTokenAmount));
+        require(
+            minAmountReceived >= instruction.minTokenAmount,
+            InsufficientAmount(minAmountReceived, instruction.minTokenAmount)
+        );
         sendParam.minAmountLD = minAmountReceived;
         MessagingFee memory msgFee = IOFT(oft).quoteSend(sendParam, false);
         return (msgFee, sendParam);
@@ -115,7 +120,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     }
 
     /// @inheritdoc IUSDT0BridgeAdapter
-    function setOAppAllowance(address oapp, bool allowance) external onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE) override {
+    function setOAppAllowance(address oapp, bool allowance) external override onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE) {
         bool oldAllowance = approvedOApps[oapp];
         require(oldAllowance != allowance, AlreadySet());
         approvedOApps[oapp] = allowance;
@@ -137,7 +142,8 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         if (block.chainid == ETH_CHAIN_ID) {
             IERC20(usdt0).safeIncreaseAllowance(oftCached, instruction.amount);
         }
-        IOFT(oftCached).send{value: msgFee.nativeFee}(sendParam, msgFee, tx.origin);
+        Payload memory payload = decodeUsdt0Payload(instruction.payload);
+        IOFT(oftCached).send{value: msgFee.nativeFee}(sendParam, msgFee, payload.refundRecipient);
         return instruction.amount;
     }
 }

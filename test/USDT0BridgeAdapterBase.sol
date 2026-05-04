@@ -15,10 +15,11 @@ abstract contract USDT0BridgeAdapterBase is Base {
         uint256 amount = _randomBridgeAmount();
         uint256 minAmountOut = amount * 99 / 100;
         address claimer = makeAddr("claimer");
+        address refundRecipient = makeAddr("refundRecipient");
         uint128 gasLimit = 1_000_000;
 
         IBridgeAdapter.BridgeInstruction memory ix = IBridgeAdapter.BridgeInstruction({
-            payload: l1Peer.encodeUsdt0Payload(l2Fork.eid, claimer, gasLimit),
+            payload: l1Peer.encodeUsdt0Payload(l2Fork.eid, claimer, refundRecipient, gasLimit),
             token: l1Fork.usdt,
             amount: amount,
             chainTo: l2Fork.chainId,
@@ -43,10 +44,11 @@ abstract contract USDT0BridgeAdapterBase is Base {
         uint256 amount = _randomBridgeAmount();
         uint256 minAmountOut = amount * 99 / 100;
         address claimer = makeAddr("claimer");
+        address refundRecipient = makeAddr("refundRecipient");
         uint128 gasLimit = 1_000_000;
 
         IBridgeAdapter.BridgeInstruction memory ix = IBridgeAdapter.BridgeInstruction({
-            payload: l2Peer.encodeUsdt0Payload(l1Fork.eid, claimer, gasLimit),
+            payload: l2Peer.encodeUsdt0Payload(l1Fork.eid, claimer, refundRecipient, gasLimit),
             token: l2Fork.usdt,
             amount: amount,
             chainTo: l1Fork.chainId,

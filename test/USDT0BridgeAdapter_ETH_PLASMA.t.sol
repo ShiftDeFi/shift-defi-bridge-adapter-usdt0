@@ -42,6 +42,7 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
 
         address vault = makeAddr("vault");
         address claimer = makeAddr("claimer");
+        address refundRecipient = makeAddr("refundRecipient");
         deal(l1Fork.usdt, vault, amount);
         vm.startPrank(vault);
         IERC20(l1Fork.usdt).safeIncreaseAllowance(address(containerPrincipal), amount);
@@ -58,7 +59,7 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
             amount: amount,
             minTokenAmount: minAmountOut,
             token: l1Fork.usdt,
-            payload: l1Peer.encodeUsdt0Payload(l2Fork.eid, claimer, gasLimit)
+            payload: l1Peer.encodeUsdt0Payload(l2Fork.eid, claimer, refundRecipient, gasLimit)
         });
 
         vm.startPrank(roles.operator);

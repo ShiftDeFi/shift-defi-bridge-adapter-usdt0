@@ -17,6 +17,7 @@ interface IUSDT0BridgeAdapter {
     struct Payload {
         uint32 dstEid;
         address claimer;
+        address refundRecipient;
         uint128 gasLimit;
     }
 
@@ -44,10 +45,14 @@ interface IUSDT0BridgeAdapter {
      * @notice Encodes the adapter payload used for a bridge instruction.
      * @param dstEid LayerZero destination endpoint id.
      * @param claimer Address that will be able to claim bridged funds on the destination chain.
+     * @param refundRecipient Address that will get refund
      * @param gasLimit Gas limit for the compose call on the destination chain.
      * @return Encoded adapter payload.
      */
-    function encodeUsdt0Payload(uint32 dstEid, address claimer, uint128 gasLimit) external pure returns (bytes memory);
+    function encodeUsdt0Payload(uint32 dstEid, address claimer, address refundRecipient, uint128 gasLimit)
+        external
+        pure
+        returns (bytes memory);
 
     /**
      * @notice Decodes an adapter payload from a bridge instruction.
