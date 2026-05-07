@@ -48,7 +48,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         uint256 _maxCacheSize,
         address _usdt0,
         address _oft
-    ) external override initializer {
+    ) external initializer {
         require(_usdt0 != address(0), Errors.ZeroAddress());
         require(_oft != address(0), Errors.ZeroAddress());
         usdt0 = _usdt0;
