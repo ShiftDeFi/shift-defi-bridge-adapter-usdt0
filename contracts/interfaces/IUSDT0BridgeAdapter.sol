@@ -22,26 +22,6 @@ interface IUSDT0BridgeAdapter {
     }
 
     /**
-     * @notice Initializes the adapter.
-     * @param _defaultAdmin Address that receives the default admin role.
-     * @param _bridgeAdapterManager Address that receives the bridge adapter manager role.
-     * @param _cacheManager Address that receives the cache manager role.
-     * @param _slippageCapPct Maximum allowed slippage delta in 1e18 precision.
-     * @param _maxCacheSize Maximum bridge retry cache size.
-     * @param _usdt0 USDT0 token address on the current chain.
-     * @param _oft LayerZero OFT endpoint used for bridging.
-     */
-    function initialize(
-        address _defaultAdmin,
-        address _bridgeAdapterManager,
-        address _cacheManager,
-        uint256 _slippageCapPct,
-        uint256 _maxCacheSize,
-        address _usdt0,
-        address _oft
-    ) external;
-
-    /**
      * @notice Encodes the adapter payload used for a bridge instruction.
      * @param dstEid LayerZero destination endpoint id.
      * @param claimer Address that will be able to claim bridged funds on the destination chain.
