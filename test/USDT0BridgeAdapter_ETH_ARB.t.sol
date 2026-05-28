@@ -27,10 +27,20 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
 
         _setUp(
             Fork({
-                rpc: ETHEREUM_RPC, usdt: ETHEREUM_USDT, oft: ETHEREUM_OFT, lzEndpoint: ETHEREUM_LZ_ENDPOINT, chainId: ETHEREUM_CHAIN_ID, eid: ETHEREUM_EID
+                rpc: ETHEREUM_RPC,
+                usdt: ETHEREUM_USDT,
+                oft: ETHEREUM_OFT,
+                lzEndpoint: ETHEREUM_LZ_ENDPOINT,
+                chainId: ETHEREUM_CHAIN_ID,
+                eid: ETHEREUM_EID
             }),
             Fork({
-                rpc: ARBITRUM_RPC, usdt: ARBITRUM_USDT, oft: ARBITRUM_OFT, lzEndpoint: ARBITRUM_LZ_ENDPOINT, chainId: ARBITRUM_CHAIN_ID, eid: ARBITRUM_EID
+                rpc: ARBITRUM_RPC,
+                usdt: ARBITRUM_USDT,
+                oft: ARBITRUM_OFT,
+                lzEndpoint: ARBITRUM_LZ_ENDPOINT,
+                chainId: ARBITRUM_CHAIN_ID,
+                eid: ARBITRUM_EID
             })
         );
     }
