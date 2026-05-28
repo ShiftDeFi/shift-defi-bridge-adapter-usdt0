@@ -48,6 +48,7 @@ abstract contract Base is Test {
         string rpc;
         address usdt;
         address oft;
+        address lzEndpoint;
         uint256 chainId;
         uint32 eid;
     }
@@ -75,6 +76,7 @@ abstract contract Base is Test {
         l1Peer.setPeer(l2Fork.chainId, address(l2Peer));
         l1Peer.setBridgePath(l1Fork.usdt, l2Fork.chainId, l2Fork.usdt);
         l1Peer.whitelistBridger(roles.bridger);
+        l1Peer.setOAppAllowance(address(l2Peer), true);
         vm.stopPrank();
 
         vm.selectFork(l2ForkId);
@@ -82,6 +84,7 @@ abstract contract Base is Test {
         l2Peer.setBridgePath(l2Fork.usdt, l1Fork.chainId, l2Fork.usdt);
         l2Peer.setPeer(l1Fork.chainId, address(l1Peer));
         l2Peer.whitelistBridger(roles.bridger);
+        l2Peer.setOAppAllowance(address(l1Peer), true);
         vm.stopPrank();
 
         vm.selectFork(l1ForkId);
@@ -124,7 +127,8 @@ abstract contract Base is Test {
                 SLIPPAGE_CAP_PCT,
                 BRIDGE_CACHE_MAX_SIZE,
                 _fork.usdt,
-                _fork.oft
+                _fork.oft,
+                _fork.lzEndpoint
             )
         );
 

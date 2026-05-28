@@ -19,6 +19,8 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
     address constant ETHEREUM_OFT = 0x6C96dE32CEa08842dcc4058c14d3aaAD7Fa41dee;
     address constant PLASMA_USDT = 0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb;
     address constant PLASMA_OFT = 0x02ca37966753bDdDf11216B73B16C1dE756A7CF9;
+    address constant ETHEREUM_LZ_ENDPOINT = 0x1a44076050125825900e736c501f859c50fE728c;
+    address constant PLASMA_LZ_ENDPOINT = 0x6F475642a6e85809B1c36Fa62763669b1b48DD5B;
 
     function setUp() public {
         string memory ETHEREUM_RPC = vm.envString("ETH_RPC_URL");
@@ -26,9 +28,21 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
 
         _setUp(
             Fork({
-                rpc: ETHEREUM_RPC, usdt: ETHEREUM_USDT, oft: ETHEREUM_OFT, chainId: ETHEREUM_CHAIN_ID, eid: ETHEREUM_EID
+                rpc: ETHEREUM_RPC,
+                usdt: ETHEREUM_USDT,
+                oft: ETHEREUM_OFT,
+                lzEndpoint: ETHEREUM_LZ_ENDPOINT,
+                chainId: ETHEREUM_CHAIN_ID,
+                eid: ETHEREUM_EID
             }),
-            Fork({rpc: PLASMA_RPC, usdt: PLASMA_USDT, oft: PLASMA_OFT, chainId: PLASMA_CHAIN_ID, eid: PLASMA_EID})
+            Fork({
+                rpc: PLASMA_RPC,
+                usdt: PLASMA_USDT,
+                oft: PLASMA_OFT,
+                lzEndpoint: PLASMA_LZ_ENDPOINT,
+                chainId: PLASMA_CHAIN_ID,
+                eid: PLASMA_EID
+            })
         );
     }
 

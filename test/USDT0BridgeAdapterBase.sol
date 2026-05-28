@@ -38,6 +38,21 @@ abstract contract USDT0BridgeAdapterBase is Base {
         assertEq(bridgedAmount, amount);
     }
 
+    function test_BridgeFromL1ToL2_ComposeMsg() public {
+        address claimer = makeAddr("claimer");
+        uint256 amount = _randomBridgeAmount();
+
+        vm.selectFork(l2ForkId);
+
+        vm.startPrank(l2Fork.lzEndpoint);
+        bytes memory _msg = _wrapComposeMsg(abi.encode(claimer, amount));
+        l2Peer.lzCompose(address(l1Peer), bytes32(0x0), _msg, address(1), new bytes(0));
+        vm.stopPrank();
+
+        uint256 claimableAmount = l2Peer.claimableAmounts(claimer, l2Fork.usdt);
+        assertEq(claimableAmount, amount);
+    }
+
     function test_BridgeFromL2ToL1() public {
         vm.selectFork(l2ForkId);
 
@@ -65,5 +80,24 @@ abstract contract USDT0BridgeAdapterBase is Base {
         uint256 bridgedAmount = l2Peer.bridge{value: nativeFee}(ix, receiver);
         vm.stopPrank();
         assertEq(bridgedAmount, amount);
+    }
+
+    function test_BridgeFromL2ToL1_ComposeMsg() public {
+        address claimer = makeAddr("claimer");
+        uint256 amount = _randomBridgeAmount();
+
+        vm.selectFork(l1ForkId);
+
+        vm.startPrank(l1Fork.lzEndpoint);
+        bytes memory _msg = _wrapComposeMsg(abi.encode(claimer, amount));
+        l1Peer.lzCompose(address(l2Peer), bytes32(0x0), _msg, address(1), new bytes(0));
+        vm.stopPrank();
+
+        uint256 claimableAmount = l1Peer.claimableAmounts(claimer, l1Fork.usdt);
+        assertEq(claimableAmount, amount);
+    }
+
+    function _wrapComposeMsg(bytes memory msg) internal pure returns (bytes memory) {
+        return abi.encodePacked(bytes32(0x0), bytes32(0x0), bytes12(0x0), msg);
     }
 }

@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {OptionsBuilder} from "@layer-zero/devtools/packages/oapp-evm/oapp/libs/OptionsBuilder.sol";
+import {OFTComposeMsgCodec} from "@layerzerolabs/oft-evm/contracts/libs/OFTComposeMsgCodec.sol";
 import {IOFT, SendParam, OFTReceipt} from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 
 import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
@@ -18,11 +19,13 @@ import {ILayerZeroComposer} from "@layerzerolabs/lz-evm-protocol-v2/contracts/in
 contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer {
     using SafeERC20 for IERC20;
     using OptionsBuilder for bytes;
+    using OFTComposeMsgCodec for bytes;
 
     uint256 private constant ETH_CHAIN_ID = 1;
 
     address public usdt0;
     address public oft;
+    address public lzEndpoint;
 
     mapping(address => bool) public approvedOApps;
 
@@ -47,12 +50,15 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         uint256 _slippageCapPct,
         uint256 _maxCacheSize,
         address _usdt0,
-        address _oft
+        address _oft,
+        address _lzEndpoint
     ) external initializer {
         require(_usdt0 != address(0), Errors.ZeroAddress());
         require(_oft != address(0), Errors.ZeroAddress());
+        require(_lzEndpoint != address(0), Errors.ZeroAddress());
         usdt0 = _usdt0;
         oft = _oft;
+        lzEndpoint = _lzEndpoint;
         __BridgeAdapter_init(_defaultAdmin, _bridgeAdapterManager, _cacheManager, _slippageCapPct, _maxCacheSize);
     }
 
@@ -79,8 +85,9 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     }
 
     /// @inheritdoc IUSDT0BridgeAdapter
-    function decodeLzComposeMessage(bytes memory data) public pure override returns (address, uint256) {
-        return abi.decode(data, (address, uint256));
+    function decodeLzComposeMessage(bytes calldata message) public pure override returns (address, uint256) {
+        bytes memory composeMsg = message.composeMsg();
+        return abi.decode(composeMsg, (address, uint256));
     }
 
     /// @inheritdoc IUSDT0BridgeAdapter
@@ -122,7 +129,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         address _executor,
         bytes calldata _extraData
     ) external payable override(IUSDT0BridgeAdapter, ILayerZeroComposer) {
-        require(msg.sender == oft, NotOFT());
+        require(msg.sender == lzEndpoint, NotLZEndpoint());
         require(approvedOApps[_fromOApp], NotApprovedOApp());
         (address claimer, uint256 amount) = decodeLzComposeMessage(_message);
         _finalizeBridge(claimer, usdt0, amount);
