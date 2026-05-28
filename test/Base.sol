@@ -48,6 +48,7 @@ abstract contract Base is Test {
         string rpc;
         address usdt;
         address oft;
+        address lzEndpoint;
         uint256 chainId;
         uint32 eid;
     }
@@ -124,7 +125,8 @@ abstract contract Base is Test {
                 SLIPPAGE_CAP_PCT,
                 BRIDGE_CACHE_MAX_SIZE,
                 _fork.usdt,
-                _fork.oft
+                _fork.oft,
+                _fork.lzEndpoint
             )
         );
 

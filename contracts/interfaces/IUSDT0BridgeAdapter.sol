@@ -10,7 +10,7 @@ interface IUSDT0BridgeAdapter {
 
     error NotEnougthNativeBalance(uint256 balance, uint256 needed);
     error InsufficientAmount(uint256 received, uint256 required);
-    error NotOFT();
+    error NotLZEndpoint();
     error NotApprovedOApp();
     error AlreadySet();
 

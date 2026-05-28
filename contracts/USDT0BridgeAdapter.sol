@@ -23,6 +23,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
 
     address public usdt0;
     address public oft;
+    address public lzEndpoint;
 
     mapping(address => bool) public approvedOApps;
 
@@ -47,12 +48,15 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         uint256 _slippageCapPct,
         uint256 _maxCacheSize,
         address _usdt0,
-        address _oft
+        address _oft,
+        address _lzEndpoint
     ) external initializer {
         require(_usdt0 != address(0), Errors.ZeroAddress());
         require(_oft != address(0), Errors.ZeroAddress());
+        require(_lzEndpoint != address(0), Errors.ZeroAddress());
         usdt0 = _usdt0;
         oft = _oft;
+        lzEndpoint = _lzEndpoint;
         __BridgeAdapter_init(_defaultAdmin, _bridgeAdapterManager, _cacheManager, _slippageCapPct, _maxCacheSize);
     }
 
@@ -122,7 +126,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         address _executor,
         bytes calldata _extraData
     ) external payable override(IUSDT0BridgeAdapter, ILayerZeroComposer) {
-        require(msg.sender == oft, NotOFT());
+        require(msg.sender == lzEndpoint, NotLZEndpoint());
         require(approvedOApps[_fromOApp], NotApprovedOApp());
         (address claimer, uint256 amount) = decodeLzComposeMessage(_message);
         _finalizeBridge(claimer, usdt0, amount);
