@@ -28,21 +28,9 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
 
         _setUp(
             Fork({
-                rpc: ETHEREUM_RPC,
-                usdt: ETHEREUM_USDT,
-                oft: ETHEREUM_OFT,
-                lzEndpoint: ETHEREUM_LZ_ENDPOINT,
-                chainId: ETHEREUM_CHAIN_ID,
-                eid: ETHEREUM_EID
+                rpc: ETHEREUM_RPC, usdt: ETHEREUM_USDT, oft: ETHEREUM_OFT, lzEndpoint: ETHEREUM_LZ_ENDPOINT, chainId: ETHEREUM_CHAIN_ID, eid: ETHEREUM_EID
             }),
-            Fork({
-                rpc: PLASMA_RPC,
-                usdt: PLASMA_USDT,
-                oft: PLASMA_OFT,
-                lzEndpoint: PLASMA_LZ_ENDPOINT,
-                chainId: PLASMA_CHAIN_ID,
-                eid: PLASMA_EID
-            })
+            Fork({rpc: PLASMA_RPC, usdt: PLASMA_USDT, oft: PLASMA_OFT, lzEndpoint: PLASMA_LZ_ENDPOINT, chainId: PLASMA_CHAIN_ID, eid: PLASMA_EID})
         );
     }
 
