@@ -7,4 +7,5 @@ openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/
 @layerzerolabs/oft-evm/=lib/devtools/packages/oft-evm/
 @layerzerolabs/lz-evm-protocol-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/protocol/
 @layerzerolabs/lz-evm-messagelib-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/messagelib/
+lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/oft/=@layerzerolabs/oft-evm/contracts/
 solidity-bytes-utils/=lib/solidity-bytes-utils/
