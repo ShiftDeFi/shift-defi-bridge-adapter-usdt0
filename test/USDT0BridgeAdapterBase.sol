@@ -43,7 +43,6 @@ abstract contract USDT0BridgeAdapterBase is Base {
         uint256 amount = _randomBridgeAmount();
 
         vm.selectFork(l2ForkId);
-
         vm.startPrank(l2Fork.lzEndpoint);
         bytes memory _msg = _wrapComposeMsg(abi.encode(claimer, amount));
         l2Peer.lzCompose(address(l1Peer), bytes32(0x0), _msg, address(1), new bytes(0));
@@ -87,7 +86,6 @@ abstract contract USDT0BridgeAdapterBase is Base {
         uint256 amount = _randomBridgeAmount();
 
         vm.selectFork(l1ForkId);
-
         vm.startPrank(l1Fork.lzEndpoint);
         bytes memory _msg = _wrapComposeMsg(abi.encode(claimer, amount));
         l1Peer.lzCompose(address(l2Peer), bytes32(0x0), _msg, address(1), new bytes(0));
