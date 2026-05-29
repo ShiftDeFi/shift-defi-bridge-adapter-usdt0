@@ -59,15 +59,15 @@ interface IUSDT0BridgeAdapter {
     /**
      * @notice Quotes the native LayerZero fee and derived send parameters for a bridge instruction.
      * @param instruction Bridge instruction to quote.
-     * @param receiver Address that receives the bridged OFT on the destination chain.
+     * @param claimer Address that will receive claimable funds after compose.
+     * @param peer Address that receives the bridged OFT on the destination chain.
      * @return msgFee LayerZero messaging fee quote.
      * @return sendParam Final OFT send parameters after quote adjustments.
      */
-    function quoteBridgeNativeFee(
-        IBridgeAdapter.BridgeInstruction calldata instruction,
-        address claimer,
-        address receiver
-    ) external view returns (MessagingFee memory msgFee, SendParam memory sendParam);
+    function quoteBridgeNativeFee(IBridgeAdapter.BridgeInstruction calldata instruction, address claimer, address peer)
+        external
+        view
+        returns (MessagingFee memory msgFee, SendParam memory sendParam);
 
     /**
      * @notice Completes a LayerZero compose callback and credits claimable USDT0.

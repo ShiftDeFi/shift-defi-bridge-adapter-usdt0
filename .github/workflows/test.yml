@@ -31,4 +31,4 @@ jobs:
         run: forge fmt --check
 
       - name: Run Forge build
-        run: forge build --sizes --via-ir --optimizer-runs 200
+        run: forge build contracts --sizes --via-ir --optimizer-runs 200
