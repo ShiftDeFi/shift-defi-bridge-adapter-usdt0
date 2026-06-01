@@ -88,8 +88,8 @@ interface IUSDT0BridgeAdapter {
     /**
      * @notice Sets whether an OApp and peer are allowed to bridge funds.
      * @param srcEid Source endpoint id.
-     * @param oapp OApp address.
-     * @param peer Peer address.
+     * @param oapp OApp address in the destination chain.
+     * @param peer Peer address in the source chain.
      * @param allowance Whether the OApp and peer are approved.
      */
     function setOAppAndPeerAllowance(uint32 srcEid, address oapp, address peer, bool allowance) external;
