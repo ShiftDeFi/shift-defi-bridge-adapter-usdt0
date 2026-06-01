@@ -163,9 +163,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     {
         (MessagingFee memory msgFee, SendParam memory sendParam) = quoteBridgeNativeFee(instruction, receiver, peer);
         uint256 ethSelfBalance = address(this).balance;
-        if (ethSelfBalance < msgFee.nativeFee) {
-            revert NotEnougthNativeBalance(ethSelfBalance, msgFee.nativeFee);
-        }
+        require(ethSelfBalance >= msgFee.nativeFee, NotEnougthNativeBalance(ethSelfBalance, msgFee.nativeFee));
 
         address oftCached = localOft;
         if (block.chainid == ETH_CHAIN_ID) {
