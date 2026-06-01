@@ -71,7 +71,7 @@ interface IUSDT0BridgeAdapter {
 
     /**
      * @notice Completes a LayerZero compose callback and credits claimable USDT0.
-     * @param _fromOApp OApp that initiated the compose flow.
+     * @param _fromOApp OApp that initiated the compose flow in destination chain.
      * @param _guid Unique LayerZero message id.
      * @param _message Encoded compose message payload.
      * @param _executor Executor address supplied by LayerZero.

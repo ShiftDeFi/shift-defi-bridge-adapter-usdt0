@@ -49,7 +49,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
 
         vm.startPrank(l2Fork.lzEndpoint);
         bytes memory _msg = _wrapComposeMsg(srcEid, composeFrom, amount, l2Peer.encodeLzComposeMessage(claimer));
-        l2Peer.lzCompose(address(l1Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));
+        l2Peer.lzCompose(address(l2Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));
         vm.stopPrank();
 
         uint256 claimableAmount = l2Peer.claimableAmounts(claimer, l2Fork.usdt);
@@ -63,7 +63,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
 
         vm.prank(fakeEndpoint);
         vm.expectRevert(abi.encodeWithSelector(IUSDT0BridgeAdapter.NotLZEndpoint.selector));
-        l2Peer.lzCompose(address(l1Fork.oft), bytes32(0x0), bytes(""), address(1), bytes(""));
+        l2Peer.lzCompose(address(l2Fork.oft), bytes32(0x0), bytes(""), address(1), bytes(""));
     }
 
     function test_BridgeFromL1ToL2_ComposeMsg_InvalidOApp() public {
@@ -85,7 +85,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
 
         vm.expectRevert(abi.encodeWithSelector(IUSDT0BridgeAdapter.NotApprovedPeer.selector));
         vm.prank(l2Fork.lzEndpoint);
-        l2Peer.lzCompose(l1Fork.oft, bytes32(0x0), _msg, address(1), bytes(""));
+        l2Peer.lzCompose(l2Fork.oft, bytes32(0x0), _msg, address(1), bytes(""));
     }
 
     function test_BridgeFromL2ToL1() public {
@@ -126,7 +126,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
         vm.selectFork(l1ForkId);
         vm.startPrank(l1Fork.lzEndpoint);
         bytes memory _msg = _wrapComposeMsg(srcEid, composeFrom, amount, l1Peer.encodeLzComposeMessage(claimer));
-        l1Peer.lzCompose(address(l2Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));
+        l1Peer.lzCompose(address(l1Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));
         vm.stopPrank();
 
         uint256 claimableAmount = l1Peer.claimableAmounts(claimer, l1Fork.usdt);
@@ -140,7 +140,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
 
         vm.prank(fakeEndpoint);
         vm.expectRevert(abi.encodeWithSelector(IUSDT0BridgeAdapter.NotLZEndpoint.selector));
-        l1Peer.lzCompose(address(l2Fork.oft), bytes32(0x0), bytes(""), address(1), bytes(""));
+        l1Peer.lzCompose(address(l1Fork.oft), bytes32(0x0), bytes(""), address(1), bytes(""));
     }
 
     function test_BridgeFromL2ToL1_ComposeMsg_InvalidOApp() public {
@@ -162,7 +162,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
 
         vm.expectRevert(abi.encodeWithSelector(IUSDT0BridgeAdapter.NotApprovedPeer.selector));
         vm.prank(l1Fork.lzEndpoint);
-        l1Peer.lzCompose(l2Fork.oft, bytes32(0x0), _msg, address(1), bytes(""));
+        l1Peer.lzCompose(l1Fork.oft, bytes32(0x0), _msg, address(1), bytes(""));
     }
 
     function test_BridgeFromContainer() public {
@@ -220,7 +220,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
         emit IBridgeAdapter.Bridged(address(l2ContainerAgent), l2Fork.usdt, amount);
 
         vm.prank(l2Fork.lzEndpoint);
-        l2Peer.lzCompose(address(l1Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));
+        l2Peer.lzCompose(address(l2Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));
 
         uint256 claimableAmount = l2Peer.claimableAmounts(address(l2ContainerAgent), l2Fork.usdt);
         assertEq(claimableAmount, amount);

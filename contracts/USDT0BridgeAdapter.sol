@@ -131,7 +131,8 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         uint32 srcEid = _message.srcEid();
         require(approvedOApps[srcEid][_fromOApp], NotApprovedOApp());
 
-        address peer = address(uint160(uint256(_message.composeFrom())));
+        bytes32 peerBytes32 = _message.composeFrom();
+        address peer = OFTComposeMsgCodec.bytes32ToAddress(peerBytes32);
         require(approvedPeers[srcEid][peer], NotApprovedPeer());
 
         bytes memory composeMsg = _message.composeMsg();
