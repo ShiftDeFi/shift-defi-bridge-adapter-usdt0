@@ -6,9 +6,8 @@ import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfac
 import {IBridgeAdapter} from "@shift-defi/core/interfaces/IBridgeAdapter.sol";
 
 interface IUSDT0BridgeAdapter {
-    event OAppAndPeerAllowanceSet(
-        uint32 indexed srcEid, address indexed oapp, address indexed peer, bool oldAllowance, bool newAllowance
-    );
+    event OAppAllowanceSet(uint32 indexed srcEid, address indexed oapp, bool oldAllowance, bool newAllowance);
+    event EidToChainIdSet(uint32 indexed srcEid, uint256 indexed srcChainId);
 
     error NotEnougthNativeBalance(uint256 balance, uint256 needed);
     error InsufficientAmount(uint256 received, uint256 required);
@@ -18,6 +17,7 @@ interface IUSDT0BridgeAdapter {
     error AlreadySet();
     error InvalidGasLimit();
     error InvalidDstEid();
+    error InvalidEid();
 
     struct Payload {
         uint32 dstEid;
@@ -88,13 +88,19 @@ interface IUSDT0BridgeAdapter {
     ) external payable;
 
     /**
-     * @notice Sets whether an OApp and peer are allowed to bridge funds.
+     * @notice Sets whether an OApp is allowed to bridge funds.
      * @param srcEid Source endpoint id.
-     * @param oapp OApp address in the destination chain.
-     * @param peer Peer address in the source chain.
-     * @param allowance Whether the OApp and peer are approved.
+     * @param dstOApp Destination OApp address.
+     * @param allowance Whether the OApp are approved.
      */
-    function setOAppAndPeerAllowance(uint32 srcEid, address oapp, address peer, bool allowance) external;
+    function setOAppAllowance(uint32 srcEid, address dstOApp, bool allowance) external;
+
+    /**
+     * @notice Sets the chain id for a given layerzero endpoint id.
+     * @param srcEid Source endpoint id.
+     * @param srcChainId Source chain id.
+     */
+    function setEidToChainId(uint32 srcEid, uint256 srcChainId) external;
 
     /**
      * @notice Not implemented as we can retry the bridge operation using layerzeroscan

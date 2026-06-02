@@ -77,7 +77,8 @@ abstract contract Base is Test {
         l1Peer.setPeer(l2Fork.chainId, address(l2Peer));
         l1Peer.setBridgePath(l1Fork.usdt, l2Fork.chainId, l2Fork.usdt);
         l1Peer.whitelistBridger(roles.bridger);
-        l1Peer.setOAppAndPeerAllowance(l2Fork.eid, address(l1Fork.oft), address(l2Peer), true);
+        l1Peer.setOAppAllowance(l2Fork.eid, address(l1Fork.oft), true);
+        l1Peer.setEidToChainId(l2Fork.eid, l2Fork.chainId);
         vm.stopPrank();
 
         vm.selectFork(l2ForkId);
@@ -85,7 +86,8 @@ abstract contract Base is Test {
         l2Peer.setBridgePath(l2Fork.usdt, l1Fork.chainId, l2Fork.usdt);
         l2Peer.setPeer(l1Fork.chainId, address(l1Peer));
         l2Peer.whitelistBridger(roles.bridger);
-        l2Peer.setOAppAndPeerAllowance(l1Fork.eid, address(l2Fork.oft), address(l1Peer), true);
+        l2Peer.setOAppAllowance(l1Fork.eid, address(l2Fork.oft), true);
+        l2Peer.setEidToChainId(l1Fork.eid, l1Fork.chainId);
         vm.stopPrank();
 
         l2ContainerAgent = _proxifyContainerAgent(l2ForkId, roles, l2Fork);

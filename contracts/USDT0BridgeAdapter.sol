@@ -29,7 +29,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     address public lzEndpoint;
 
     mapping(uint32 => mapping(address => bool)) public approvedOApps;
-    mapping(uint32 => mapping(address => bool)) public approvedPeers;
+    mapping(uint32 => uint256) public eidToChainId;
 
     constructor() {
         _disableInitializers();
@@ -127,11 +127,13 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         require(msg.sender == lzEndpoint, NotLZEndpoint());
 
         uint32 srcEid = _message.srcEid();
+        uint256 srcChainId = eidToChainId[srcEid];
+        require(srcChainId != 0, InvalidEid());
         require(approvedOApps[srcEid][_fromOApp], NotApprovedOApp());
 
-        bytes32 peerBytes32 = _message.composeFrom();
-        address peer = OFTComposeMsgCodec.bytes32ToAddress(peerBytes32);
-        require(approvedPeers[srcEid][peer], NotApprovedPeer());
+        bytes32 senderBytes32 = _message.composeFrom();
+        address sender = OFTComposeMsgCodec.bytes32ToAddress(senderBytes32);
+        require(sender == peers[srcChainId], NotApprovedPeer());
 
         bytes memory composeMsg = _message.composeMsg();
         address claimer = decodeLzComposeMessage(composeMsg);
@@ -139,19 +141,22 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     }
 
     /// @inheritdoc IUSDT0BridgeAdapter
-    function setOAppAndPeerAllowance(uint32 srcEid, address oapp, address peer, bool allowance)
+    function setOAppAllowance(uint32 srcEid, address dstOApp, bool allowance)
         public
         override
         onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE)
     {
-        bool oldOAppAllowance = approvedOApps[srcEid][oapp];
+        bool oldOAppAllowance = approvedOApps[srcEid][dstOApp];
         require(oldOAppAllowance != allowance, AlreadySet());
-        approvedOApps[srcEid][oapp] = allowance;
+        approvedOApps[srcEid][dstOApp] = allowance;
 
-        bool oldPeerAllowance = approvedPeers[srcEid][peer];
-        require(oldPeerAllowance != allowance, AlreadySet());
-        approvedPeers[srcEid][peer] = allowance;
-        emit OAppAndPeerAllowanceSet(srcEid, oapp, peer, oldOAppAllowance, allowance);
+        emit OAppAllowanceSet(srcEid, dstOApp, oldOAppAllowance, allowance);
+    }
+
+    function setEidToChainId(uint32 srcEid, uint256 srcChainId) public override onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE) {
+        require(eidToChainId[srcEid] != srcChainId, AlreadySet());
+        eidToChainId[srcEid] = srcChainId;
+        emit EidToChainIdSet(srcEid, srcChainId);
     }
 
     function retryBridge(BridgeInstruction calldata, address, uint256)
