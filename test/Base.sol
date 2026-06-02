@@ -129,9 +129,7 @@ abstract contract Base is Test {
                 _roles.cacheManager,
                 SLIPPAGE_CAP_PCT,
                 BRIDGE_CACHE_MAX_SIZE,
-                _fork.usdt,
-                _fork.oft,
-                _fork.lzEndpoint
+                _fork.oft
             )
         );
 

@@ -16,6 +16,8 @@ interface IUSDT0BridgeAdapter {
     error NotApprovedOApp();
     error NotApprovedPeer();
     error AlreadySet();
+    error InvalidGasLimit();
+    error InvalidDstEid();
 
     struct Payload {
         uint32 dstEid;
@@ -93,4 +95,11 @@ interface IUSDT0BridgeAdapter {
      * @param allowance Whether the OApp and peer are approved.
      */
     function setOAppAndPeerAllowance(uint32 srcEid, address oapp, address peer, bool allowance) external;
+
+    /**
+     * @notice Not implemented as we can retry the bridge operation using layerzeroscan
+     */
+    function retryBridge(IBridgeAdapter.BridgeInstruction calldata instruction, address receiver, uint256 nonce)
+        external
+        payable;
 }

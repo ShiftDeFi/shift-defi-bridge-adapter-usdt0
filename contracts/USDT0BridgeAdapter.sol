@@ -5,6 +5,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {OptionsBuilder} from "@layer-zero/devtools/packages/oapp-evm/oapp/libs/OptionsBuilder.sol";
 import {OFTComposeMsgCodec} from "@layerzerolabs/oft-evm/contracts/libs/OFTComposeMsgCodec.sol";
 import {IOFT, SendParam, OFTReceipt} from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
+import {IOAppCore} from "@layer-zero/devtools/packages/oapp-evm/oapp/interfaces/IOAppCore.sol";
 
 import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 import {BridgeAdapter} from "@shift-defi/core/BridgeAdapter.sol";
@@ -41,9 +42,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
      * @param _cacheManager Address that receives the cache manager role.
      * @param _slippageCapPct Maximum allowed slippage delta in 1e18 precision.
      * @param _maxCacheSize Maximum bridge retry cache size.
-     * @param _usdt0 USDT0 token address on the current chain.
      * @param _localOft LayerZero OFT endpoint used for bridging.
-     * @param _lzEndpoint LayerZero endpoint address.
      */
     function initialize(
         address _defaultAdmin,
@@ -51,16 +50,12 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         address _cacheManager,
         uint256 _slippageCapPct,
         uint256 _maxCacheSize,
-        address _usdt0,
-        address _localOft,
-        address _lzEndpoint
+        address _localOft
     ) external initializer {
-        require(_usdt0 != address(0), Errors.ZeroAddress());
         require(_localOft != address(0), Errors.ZeroAddress());
-        require(_lzEndpoint != address(0), Errors.ZeroAddress());
-        usdt0 = _usdt0;
         localOft = _localOft;
-        lzEndpoint = _lzEndpoint;
+        usdt0 = IOFT(_localOft).token();
+        lzEndpoint = address(IOAppCore(_localOft).endpoint());
         __BridgeAdapter_init(_defaultAdmin, _bridgeAdapterManager, _cacheManager, _slippageCapPct, _maxCacheSize);
     }
 
@@ -97,6 +92,9 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         returns (MessagingFee memory, SendParam memory)
     {
         Payload memory payload = decodeUsdt0Payload(instruction.payload);
+        require(payload.gasLimit > 0, InvalidGasLimit());
+        require(payload.refundRecipient != address(0), Errors.ZeroAddress());
+        require(payload.dstEid > 0, InvalidDstEid());
         bytes memory composeMsg = encodeLzComposeMessage(claimer);
         bytes memory extraOptions = OptionsBuilder.newOptions().addExecutorLzComposeOption(0, payload.gasLimit, 0);
 
@@ -154,6 +152,14 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         require(oldPeerAllowance != allowance, AlreadySet());
         approvedPeers[srcEid][peer] = allowance;
         emit OAppAndPeerAllowanceSet(srcEid, oapp, peer, oldOAppAllowance, allowance);
+    }
+
+    function retryBridge(BridgeInstruction calldata, address, uint256)
+        external
+        payable
+        override(BridgeAdapter, IUSDT0BridgeAdapter)
+    {
+        revert Errors.NotImplemented();
     }
 
     function _bridge(BridgeInstruction calldata instruction, address receiver, address peer)
