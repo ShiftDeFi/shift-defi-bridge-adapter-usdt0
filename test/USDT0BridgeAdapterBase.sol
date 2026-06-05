@@ -48,6 +48,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
         uint32 srcEid = l1Fork.eid;
 
         vm.startPrank(l2Fork.lzEndpoint);
+        deal(l2Fork.usdt, address(l2Peer), amount);
         bytes memory _msg = _wrapComposeMsg(srcEid, composeFrom, amount, l2Peer.encodeLzComposeMessage(claimer));
         l2Peer.lzCompose(address(l2Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));
         vm.stopPrank();
@@ -124,6 +125,7 @@ abstract contract USDT0BridgeAdapterBase is Base {
         uint32 srcEid = l2Fork.eid;
 
         vm.selectFork(l1ForkId);
+        deal(l1Fork.usdt, address(l1Peer), amount);
         vm.startPrank(l1Fork.lzEndpoint);
         bytes memory _msg = _wrapComposeMsg(srcEid, composeFrom, amount, l1Peer.encodeLzComposeMessage(claimer));
         l1Peer.lzCompose(address(l1Fork.oft), bytes32(0x0), _msg, address(1), new bytes(0));

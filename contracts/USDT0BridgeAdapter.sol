@@ -136,7 +136,9 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
 
         bytes memory composeMsg = _message.composeMsg();
         address claimer = decodeLzComposeMessage(composeMsg);
-        _finalizeBridge(claimer, usdt0, _message.amountLD());
+        uint256 amountLD = _message.amountLD();
+        require(IERC20(usdt0).balanceOf(address(this)) >= amountLD, NotEnoughUsdt0Balance());
+        _finalizeBridge(claimer, usdt0, amountLD);
     }
 
     function setEidToChainId(uint32 srcEid, uint256 srcChainId) public override onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE) {

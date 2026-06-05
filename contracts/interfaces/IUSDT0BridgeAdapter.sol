@@ -17,6 +17,7 @@ interface IUSDT0BridgeAdapter {
     error InvalidGasLimit();
     error InvalidDstEid();
     error InvalidEid();
+    error NotEnoughUsdt0Balance();
 
     struct Payload {
         uint32 dstEid;
