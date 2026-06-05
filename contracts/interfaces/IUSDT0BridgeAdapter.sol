@@ -101,11 +101,4 @@ interface IUSDT0BridgeAdapter {
      * @param srcChainId Source chain id.
      */
     function setEidToChainId(uint32 srcEid, uint256 srcChainId) external;
-
-    /**
-     * @notice Not implemented as we can retry the bridge operation using layerzeroscan
-     */
-    function retryBridge(IBridgeAdapter.BridgeInstruction calldata instruction, address receiver, uint256 nonce)
-        external
-        payable;
 }

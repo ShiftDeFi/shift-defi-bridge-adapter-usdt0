@@ -159,11 +159,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         emit EidToChainIdSet(srcEid, srcChainId);
     }
 
-    function retryBridge(BridgeInstruction calldata, address, uint256)
-        external
-        payable
-        override(BridgeAdapter, IUSDT0BridgeAdapter)
-    {
+    function retryBridge(BridgeInstruction calldata, address, uint256) external payable override {
         revert Errors.NotImplemented();
     }
 
