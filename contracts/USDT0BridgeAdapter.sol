@@ -28,7 +28,6 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
     address public localOft;
     address public lzEndpoint;
 
-    mapping(uint32 => mapping(address => bool)) public approvedOApps;
     mapping(uint32 => uint256) public eidToChainId;
 
     constructor() {
@@ -129,7 +128,7 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         uint32 srcEid = _message.srcEid();
         uint256 srcChainId = eidToChainId[srcEid];
         require(srcChainId != 0, InvalidEid());
-        require(approvedOApps[srcEid][_fromOApp], NotApprovedOApp());
+        require(localOft == _fromOApp, NotApprovedOApp());
 
         bytes32 senderBytes32 = _message.composeFrom();
         address sender = OFTComposeMsgCodec.bytes32ToAddress(senderBytes32);
@@ -138,19 +137,6 @@ contract USDT0BridgeAdapter is BridgeAdapter, IUSDT0BridgeAdapter, IOAppComposer
         bytes memory composeMsg = _message.composeMsg();
         address claimer = decodeLzComposeMessage(composeMsg);
         _finalizeBridge(claimer, usdt0, _message.amountLD());
-    }
-
-    /// @inheritdoc IUSDT0BridgeAdapter
-    function setOAppAllowance(uint32 srcEid, address dstOApp, bool allowance)
-        public
-        override
-        onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE)
-    {
-        bool oldOAppAllowance = approvedOApps[srcEid][dstOApp];
-        require(oldOAppAllowance != allowance, AlreadySet());
-        approvedOApps[srcEid][dstOApp] = allowance;
-
-        emit OAppAllowanceSet(srcEid, dstOApp, oldOAppAllowance, allowance);
     }
 
     function setEidToChainId(uint32 srcEid, uint256 srcChainId) public override onlyRole(BRIDGE_ADAPTER_MANAGER_ROLE) {

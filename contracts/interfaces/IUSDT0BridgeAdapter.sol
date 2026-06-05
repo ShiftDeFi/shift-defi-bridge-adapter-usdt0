@@ -6,7 +6,6 @@ import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfac
 import {IBridgeAdapter} from "@shift-defi/core/interfaces/IBridgeAdapter.sol";
 
 interface IUSDT0BridgeAdapter {
-    event OAppAllowanceSet(uint32 indexed srcEid, address indexed oapp, bool oldAllowance, bool newAllowance);
     event EidToChainIdSet(uint32 indexed srcEid, uint256 indexed srcChainId);
 
     error NotEnougthNativeBalance(uint256 balance, uint256 needed);
@@ -86,14 +85,6 @@ interface IUSDT0BridgeAdapter {
         address _executor,
         bytes calldata _extraData
     ) external payable;
-
-    /**
-     * @notice Sets whether an OApp is allowed to bridge funds.
-     * @param srcEid Source endpoint id.
-     * @param dstOApp Destination OApp address.
-     * @param allowance Whether the OApp are approved.
-     */
-    function setOAppAllowance(uint32 srcEid, address dstOApp, bool allowance) external;
 
     /**
      * @notice Sets the chain id for a given layerzero endpoint id.
