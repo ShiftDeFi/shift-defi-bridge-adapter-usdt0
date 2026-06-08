@@ -4,7 +4,9 @@ pragma solidity ^0.8.28;
 import {Test} from "forge-std/Test.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {IContainer} from "@shift-defi/core/interfaces/IContainer.sol";
+import {IStrategyContainer} from "@shift-defi/core/interfaces/IStrategyContainer.sol";
 import {ContainerPrincipal} from "@shift-defi/core/ContainerPrincipal.sol";
+import {ContainerAgent} from "@shift-defi/core/ContainerAgent.sol";
 import {ICrossChainContainer} from "@shift-defi/core/interfaces/ICrossChainContainer.sol";
 import {IMessageRouter} from "@shift-defi/core/interfaces/IMessageRouter.sol";
 import {USDT0BridgeAdapter} from "../contracts/USDT0BridgeAdapter.sol";
@@ -36,8 +38,6 @@ abstract contract Base is Test {
         messageRouter: makeAddr("messageRouter")
     });
 
-    address receiver = makeAddr("receiver");
-
     bytes32 public constant BRIDGE_ADAPTER_MANAGER_ROLE = keccak256("BRIDGE_ADAPTER_MANAGER_ROLE");
     uint256 public constant MIN_BRIDGE_AMOUNT = 1e6;
     uint256 public constant MAX_BRIDGE_AMOUNT = 100_000e6;
@@ -59,7 +59,8 @@ abstract contract Base is Test {
     uint256 public baseL1SnapshotId;
     uint256 public baseL2SnapshotId;
 
-    ContainerPrincipal containerPrincipal;
+    ContainerPrincipal l1ContainerPrincipal;
+    ContainerAgent l2ContainerAgent;
 
     function _setUp(Fork memory _l1Fork, Fork memory _l2Fork) internal {
         l1Fork = _l1Fork;
@@ -76,7 +77,7 @@ abstract contract Base is Test {
         l1Peer.setPeer(l2Fork.chainId, address(l2Peer));
         l1Peer.setBridgePath(l1Fork.usdt, l2Fork.chainId, l2Fork.usdt);
         l1Peer.whitelistBridger(roles.bridger);
-        l1Peer.setOAppAllowance(address(l2Peer), true);
+        l1Peer.setEidToChainId(l2Fork.eid, l2Fork.chainId);
         vm.stopPrank();
 
         vm.selectFork(l2ForkId);
@@ -84,24 +85,26 @@ abstract contract Base is Test {
         l2Peer.setBridgePath(l2Fork.usdt, l1Fork.chainId, l2Fork.usdt);
         l2Peer.setPeer(l1Fork.chainId, address(l1Peer));
         l2Peer.whitelistBridger(roles.bridger);
-        l2Peer.setOAppAllowance(address(l1Peer), true);
+        l2Peer.setEidToChainId(l1Fork.eid, l1Fork.chainId);
         vm.stopPrank();
+
+        l2ContainerAgent = _proxifyContainerAgent(l2ForkId, roles, l2Fork);
 
         vm.selectFork(l1ForkId);
         deal(l1Fork.usdt, roles.bridger, 100 ether);
         deal(roles.bridger, 500 ether);
 
-        containerPrincipal = _proxifyContainerPrincipal(l1ForkId, roles, l1Fork);
+        l1ContainerPrincipal = _proxifyContainerPrincipal(l1ForkId, roles, l1Fork);
         deal(roles.operator, 100 ether);
 
         vm.prank(roles.messengerManager);
-        containerPrincipal.setPeerContainer(makeAddr("containerAgent"));
+        l1ContainerPrincipal.setPeerContainer(address(l2ContainerAgent));
 
         vm.prank(roles.bridgeAdapterManager);
-        containerPrincipal.setBridgeAdapter(address(l1Peer), true);
+        l1ContainerPrincipal.setBridgeAdapter(address(l1Peer), true);
 
         vm.prank(roles.bridgeAdapterManager);
-        l1Peer.whitelistBridger(address(containerPrincipal));
+        l1Peer.whitelistBridger(address(l1ContainerPrincipal));
 
         vm.mockCall(roles.messageRouter, IMessageRouter.send.selector, "");
 
@@ -126,9 +129,7 @@ abstract contract Base is Test {
                 _roles.cacheManager,
                 SLIPPAGE_CAP_PCT,
                 BRIDGE_CACHE_MAX_SIZE,
-                _fork.usdt,
-                _fork.oft,
-                _fork.lzEndpoint
+                _fork.oft
             )
         );
 
@@ -140,7 +141,7 @@ abstract contract Base is Test {
         internal
         returns (ContainerPrincipal)
     {
-        uint256 remoteChainId = _fork.chainId == l1Fork.chainId ? l2Fork.chainId : l1Fork.chainId;
+        uint256 remoteChainId = l2Fork.chainId;
 
         vm.selectFork(forkId);
         TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
@@ -168,5 +169,53 @@ abstract contract Base is Test {
 
         ContainerPrincipal principal = ContainerPrincipal(payable(address(proxy)));
         return principal;
+    }
+
+    function _proxifyContainerAgent(uint256 forkId, Roles memory _roles, Fork memory _fork)
+        internal
+        returns (ContainerAgent)
+    {
+        uint256 remoteChainId = l1Fork.chainId;
+
+        vm.selectFork(forkId);
+        TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
+            address(new ContainerAgent()),
+            _roles.defaultAdmin,
+            abi.encodeWithSelector(
+                ContainerAgent.initialize.selector,
+                IContainer.ContainerInitParams({
+                    vault: makeAddr("vault"),
+                    notion: _fork.usdt,
+                    defaultAdmin: _roles.defaultAdmin,
+                    operator: _roles.operator,
+                    emergencyPauser: makeAddr("emergencyPauser"),
+                    tokenManager: makeAddr("tokenManager"),
+                    swapRouter: makeAddr("swapRouter")
+                }),
+                ICrossChainContainer.CrossChainContainerInitParams({
+                    messageRouter: _roles.messageRouter,
+                    remoteChainId: remoteChainId,
+                    messengerManager: _roles.messengerManager,
+                    bridgeAdapterManager: _roles.bridgeAdapterManager
+                }),
+                IStrategyContainer.StrategyContainerInitParams({
+                    roleAddresses: IStrategyContainer.RoleAddresses({
+                        strategyManager: makeAddr("strategyManager"),
+                        harvestManager: makeAddr("harvestManager"),
+                        reshufflingManager: makeAddr("reshufflingManager"),
+                        reshufflingExecutor: makeAddr("reshufflingExecutor"),
+                        emergencyManager: makeAddr("emergencyManager"),
+                        emergencyExecutor: makeAddr("emergencyExecutor")
+                    }),
+                    reshufflingGateway: makeAddr("reshufflingGateway"),
+                    treasury: makeAddr("treasury"),
+                    feePct: 1000,
+                    priceOracle: makeAddr("priceOracle")
+                })
+            )
+        );
+
+        ContainerAgent agent = ContainerAgent(payable(address(proxy)));
+        return agent;
     }
 }

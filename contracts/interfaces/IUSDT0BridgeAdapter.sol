@@ -6,17 +6,21 @@ import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfac
 import {IBridgeAdapter} from "@shift-defi/core/interfaces/IBridgeAdapter.sol";
 
 interface IUSDT0BridgeAdapter {
-    event OAppAllowanceSet(address indexed oapp, bool oldAllowance, bool newAllowance);
+    event EidToChainIdSet(uint32 indexed srcEid, uint256 indexed srcChainId);
 
     error NotEnougthNativeBalance(uint256 balance, uint256 needed);
     error InsufficientAmount(uint256 received, uint256 required);
     error NotLZEndpoint();
     error NotApprovedOApp();
+    error NotApprovedPeer();
     error AlreadySet();
+    error InvalidGasLimit();
+    error InvalidDstEid();
+    error InvalidEid();
+    error NotEnoughUsdt0Balance();
 
     struct Payload {
         uint32 dstEid;
-        address claimer;
         address refundRecipient;
         uint128 gasLimit;
     }
@@ -24,12 +28,11 @@ interface IUSDT0BridgeAdapter {
     /**
      * @notice Encodes the adapter payload used for a bridge instruction.
      * @param dstEid LayerZero destination endpoint id.
-     * @param claimer Address that will be able to claim bridged funds on the destination chain.
      * @param refundRecipient Address that will get refund
      * @param gasLimit Gas limit for the compose call on the destination chain.
      * @return Encoded adapter payload.
      */
-    function encodeUsdt0Payload(uint32 dstEid, address claimer, address refundRecipient, uint128 gasLimit)
+    function encodeUsdt0Payload(uint32 dstEid, address refundRecipient, uint128 gasLimit)
         external
         pure
         returns (bytes memory);
@@ -44,34 +47,33 @@ interface IUSDT0BridgeAdapter {
     /**
      * @notice Encodes the compose message sent through LayerZero.
      * @param claimer Address that will receive claimable funds after compose.
-     * @param amount Amount encoded into the compose message.
      * @return Encoded compose message.
      */
-    function encodeLzComposeMessage(address claimer, uint256 amount) external pure returns (bytes memory);
+    function encodeLzComposeMessage(address claimer) external pure returns (bytes memory);
 
     /**
      * @notice Decodes a LayerZero compose message.
      * @param data Encoded compose message.
      * @return claimer Address that will receive claimable funds.
-     * @return amount Amount contained in the compose message.
      */
-    function decodeLzComposeMessage(bytes memory data) external pure returns (address claimer, uint256 amount);
+    function decodeLzComposeMessage(bytes memory data) external pure returns (address claimer);
 
     /**
      * @notice Quotes the native LayerZero fee and derived send parameters for a bridge instruction.
      * @param instruction Bridge instruction to quote.
-     * @param receiver Address that receives the bridged OFT on the destination chain.
+     * @param claimer Address that will receive claimable funds after compose.
+     * @param peer Address that receives the bridged OFT on the destination chain.
      * @return msgFee LayerZero messaging fee quote.
      * @return sendParam Final OFT send parameters after quote adjustments.
      */
-    function quoteBridgeNativeFee(IBridgeAdapter.BridgeInstruction calldata instruction, address receiver)
+    function quoteBridgeNativeFee(IBridgeAdapter.BridgeInstruction calldata instruction, address claimer, address peer)
         external
         view
         returns (MessagingFee memory msgFee, SendParam memory sendParam);
 
     /**
      * @notice Completes a LayerZero compose callback and credits claimable USDT0.
-     * @param _fromOApp OApp that initiated the compose flow.
+     * @param _fromOApp OApp that initiated the compose flow in destination chain.
      * @param _guid Unique LayerZero message id.
      * @param _message Encoded compose message payload.
      * @param _executor Executor address supplied by LayerZero.
@@ -86,9 +88,9 @@ interface IUSDT0BridgeAdapter {
     ) external payable;
 
     /**
-     * @notice Sets whether an OApp is allowed to trigger compose finalization.
-     * @param oapp OApp address to update.
-     * @param allowance Whether the OApp is approved.
+     * @notice Sets the chain id for a given layerzero endpoint id.
+     * @param srcEid Source endpoint id.
+     * @param srcChainId Source chain id.
      */
-    function setOAppAllowance(address oapp, bool allowance) external;
+    function setEidToChainId(uint32 srcEid, uint256 srcChainId) external;
 }

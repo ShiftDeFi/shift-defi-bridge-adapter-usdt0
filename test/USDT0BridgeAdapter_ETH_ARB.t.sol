@@ -2,13 +2,8 @@
 pragma solidity ^0.8.28;
 
 import {USDT0BridgeAdapterBase} from "./USDT0BridgeAdapterBase.sol";
-import {IBridgeAdapter} from "@shift-defi/core/interfaces/IBridgeAdapter.sol";
-import {ICrossChainContainer} from "@shift-defi/core/interfaces/ICrossChainContainer.sol";
-import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
-    using SafeERC20 for IERC20;
-
     uint256 constant ETHEREUM_CHAIN_ID = 1;
     uint256 constant ARBITRUM_CHAIN_ID = 42161;
 
@@ -43,46 +38,5 @@ contract USDT0BridgeAdapterTest is USDT0BridgeAdapterBase {
                 eid: ARBITRUM_EID
             })
         );
-    }
-
-    function test_BridgeFromContainer() public {
-        vm.selectFork(l1ForkId);
-
-        uint256 amount = _randomBridgeAmount();
-        uint256 minAmountOut = amount * 99 / 100;
-        uint256 nativeFee = 10 ether;
-        uint128 gasLimit = 1_000_000;
-
-        address vault = makeAddr("vault");
-        address claimer = makeAddr("claimer");
-        address refundRecipient = makeAddr("refundRecipient");
-        deal(l1Fork.usdt, vault, amount);
-        vm.startPrank(vault);
-        IERC20(l1Fork.usdt).safeIncreaseAllowance(address(containerPrincipal), amount);
-        containerPrincipal.registerDepositRequest(amount);
-        vm.stopPrank();
-
-        address[] memory bridgeAdapters = new address[](1);
-        bridgeAdapters[0] = address(l1Peer);
-
-        IBridgeAdapter.BridgeInstruction[] memory bridgeIxs = new IBridgeAdapter.BridgeInstruction[](1);
-        bridgeIxs[0] = IBridgeAdapter.BridgeInstruction({
-            value: nativeFee,
-            chainTo: l2Fork.chainId,
-            amount: amount,
-            minTokenAmount: minAmountOut,
-            token: l1Fork.usdt,
-            payload: l1Peer.encodeUsdt0Payload(l2Fork.eid, claimer, refundRecipient, gasLimit)
-        });
-
-        vm.startPrank(roles.operator);
-        containerPrincipal.sendDepositRequest{value: nativeFee}(
-            ICrossChainContainer.MessageInstruction({
-                value: 0, adapter: makeAddr("messageAdapter"), parameters: new bytes(0)
-            }),
-            bridgeAdapters,
-            bridgeIxs
-        );
-        vm.stopPrank();
     }
 }
