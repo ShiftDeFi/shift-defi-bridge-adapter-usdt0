@@ -1,7 +1,7 @@
 @openzeppelin/contracts/=lib/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/contracts/
 @openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
 openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/
-@shift-defi/core=lib/shift-defi-platform/contracts
+@shift-defi/core=node_modules/@shift-defi/core/contracts
 @layer-zero/devtools/packages/oapp-evm=lib/devtools/packages/oapp-evm/contracts/
 @layerzerolabs/oapp-evm/=lib/devtools/packages/oapp-evm/
 @layerzerolabs/oft-evm/=lib/devtools/packages/oft-evm/
